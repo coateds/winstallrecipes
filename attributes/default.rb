@@ -1,0 +1,1 @@
+default['swinstall']['logfile'] = 'c:/logs/swinst.log'

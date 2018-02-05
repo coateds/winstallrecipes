@@ -10,6 +10,10 @@ property :chefclientver, String
 #   action :clientupdate
 # end
 
+action :setuplog do
+  directory 'c:/logs'
+  file node['swinstall']['logfile']
+end
 
 action :clientupdate do
   chef_client_updater 'Install a diff client version' do
