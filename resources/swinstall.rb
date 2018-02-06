@@ -3,6 +3,8 @@
 property :chefclientver, String
 property :pkg, String
 property :ver, String
+property :updatestarttime, String
+property :pspkg, String
 
 # attempting to use chef client updater cookbook
 # Too many difficulties
@@ -87,7 +89,31 @@ action :chocopkguninstall do
     end
   end
 
+action :installpspkg do
+  powershell_package new_resource.pspkg do #'PSWindowsUpdate'
+    notifies :run, 'ruby_block[LogPsPkgMsg]', :immediate
+  end
 
+  # pass a customized message to the writelog function
+  ruby_block 'LogPsPkgMsg' do
+    block do
+      writelog "Installed PS Module #{new_resource.pspkg}"
+    end
+    action :nothing
+  end
+end
+
+# Try running updates daily with the time set via attribute
+# The force property will cause the task to be overwritten
+action :winupdatetask do
+  windows_task 'windows-update' do
+    command "powershell get-date | out-file -append c:\scripts\WindowsUpdateLog.log; get-windowsupdate -Install -AcceptAll -AutoReboot | out-file -append #{node['swinstall']['logfile']}"
+    run_level :highest
+    frequency :daily
+    start_time new_resource.updatestarttime
+    force
+  end
+end
 
 # this does not work as expected/hoped do not use without more research
 action :clientupdate do
