@@ -1,6 +1,8 @@
 # To learn more about Custom Resources, see https://docs.chef.io/custom_resources.html
 
 property :chefclientver, String
+property :pkg, String
+property :ver, String
 
 # attempting to use chef client updater cookbook
 # Too many difficulties
@@ -24,6 +26,68 @@ action :setuplog do
     action :nothing
   end
 end
+
+# This will install Chocolatey if not already
+# At this time, I see no easy way to log the original Chocolatey install event
+action :instchoco do
+  include_recipe 'chocolatey::default'
+end
+
+# consider the need to install 'chocolatey-core.extension' explicitly
+
+# Install the pkg with version ver
+# Notify the ruby block that calls the write log function
+action :chocopkginstall do
+  chocolatey_package new_resource.pkg do
+    action :install
+    version new_resource.ver.to_s
+    notifies :run, 'ruby_block[LogInstallPkgMsg]', :immediate
+  end
+
+  # pass a customized message to the writelog function
+  ruby_block 'LogInstallPkgMsg' do
+    block do
+      writelog "Installed #{new_resource.pkg}, Version #{new_resource.ver}"
+    end
+    action :nothing
+  end
+end
+
+# Uninstall the pkg
+# uninstall has be deprecated for chocolatey_package
+# use remove instead
+action :chocopkguninstall do
+    chocolatey_package new_resource.pkg do
+      action :remove
+      notifies :run, 'ruby_block[LogUninstallPkgMsg]', :immediate
+    end
+
+    # pass a customized message to the writelog function
+    ruby_block 'LogUninstallPkgMsg' do
+      block do
+        writelog "Uninstalled #{new_resource.pkg}"
+      end
+      action :nothing
+    end
+  end
+
+  # upgrade the pkg
+  action :chocopkgupgrade do
+    chocolatey_package new_resource.pkg do
+      action :upgrade
+      notifies :run, 'ruby_block[LogUpgradePkgMsg]', :immediate
+    end
+
+    # pass a customized message to the writelog function
+    ruby_block 'LogUpgradePkgMsg' do
+      block do
+        writelog "Upgraded #{new_resource.pkg}"
+      end
+      action :nothing
+    end
+  end
+
+
 
 # this does not work as expected/hoped do not use without more research
 action :clientupdate do
