@@ -4,8 +4,10 @@ maintainer_email 'you@example.com'
 license 'All Rights Reserved'
 description 'Installs/Configures winstallrecipes'
 long_description 'Installs/Configures winstallrecipes'
-version '0.1.3'
+version '0.1.4'
 chef_version '>= 12.1' if respond_to?(:chef_version)
+
+# v0.1.4 Add create and write to log file
 
 # v0.1.3 Add Join/Unjoin AD
 
