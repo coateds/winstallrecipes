@@ -1,1 +1,1 @@
-default['swinstall']['logfile'] = 'c:/logs/swinst.log'
+# default['swinstall']['logfile'] = 'c:/logs/swinst.log'
